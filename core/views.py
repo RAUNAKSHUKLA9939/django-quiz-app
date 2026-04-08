@@ -1,4 +1,4 @@
 from django.shortcuts import render
 
 def home(request):
-    return HttpResponse("WORKING")
+    return render(request, 'core/home.html')
