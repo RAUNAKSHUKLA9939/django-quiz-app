@@ -1,3 +1,9 @@
+/* static/css/style.css */
+
 body {
-    font-family: 'Segoe UI', sans-serif;
+    background-color: #f8f9fa;
+}
+
+.jumbotron {
+    border-radius: 10px;
 }
