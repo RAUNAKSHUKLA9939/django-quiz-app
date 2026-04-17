@@ -12,18 +12,18 @@
 </head>
 <body>
     {% if messages %}
-  <div class="container mt-2">
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
+       <div class="container mt-2">
+           {% for message in messages %}
+              <div class="alert alert-{{ message.tags }}">
+              {{ message }}
+              </div>
+            {% endfor %}
+       </div>
+    {% endif %}
 
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="#">Quiz App</a>
+    <a class="nav-link" href="{% url 'register' %}">Register</a>
 
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
