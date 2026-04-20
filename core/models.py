@@ -10,7 +10,11 @@ class Category(models.Model):
 
 class Quiz(models.Model):
     title = models.CharField(max_length=200)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        related_name='quizzes'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -18,7 +22,11 @@ class Quiz(models.Model):
 
 
 class Question(models.Model):
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(
+        Quiz,
+        on_delete=models.CASCADE,
+        related_name='questions'
+    )
     text = models.TextField()
 
     def __str__(self):
@@ -26,9 +34,13 @@ class Question(models.Model):
 
 
 class Option(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
+    question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE,
+        related_name='options'
+    )
     text = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.text} ({'Correct' if self.is_correct else 'Wrong'})"
+        return self.text
