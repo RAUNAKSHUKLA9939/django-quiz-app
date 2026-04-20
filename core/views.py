@@ -1,13 +1,16 @@
-from django.shortcuts import render, redirect
+ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 
 
 def home(request):
     return render(request, 'core/home.html')
 
 
+# REGISTER
 def register(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -15,7 +18,6 @@ def register(request):
         password = request.POST.get('password')
         confirm  = request.POST.get('confirm_password')
 
-        # Validation
         if password != confirm:
             messages.error(request, "Passwords do not match.")
             return redirect('register')
@@ -28,14 +30,40 @@ def register(request):
             messages.error(request, "Email already exists.")
             return redirect('register')
 
-        # Create user
         User.objects.create(
             username=username,
             email=email,
             password=make_password(password)
         )
 
-        messages.success(request, "Account created successfully.")
-        return redirect('register')   # TEMP (since login not made yet)
+        messages.success(request, "Account created successfully. Please login.")
+        return redirect('login')
 
     return render(request, 'core/register.html')
+
+
+# LOGIN
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            messages.success(request, f"Welcome {username}!")
+            return redirect('home')
+        else:
+            messages.error(request, "Invalid username or password.")
+            return redirect('login')
+
+    return render(request, 'core/login.html')
+
+
+# LOGOUT
+@login_required
+def logout_view(request):
+    logout(request)
+    messages.info(request, "You have been logged out.")
+    return redirect('login')
