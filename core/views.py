@@ -1,4 +1,4 @@
- from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
@@ -10,7 +10,6 @@ def home(request):
     return render(request, 'core/home.html')
 
 
-# REGISTER
 def register(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -42,7 +41,6 @@ def register(request):
     return render(request, 'core/register.html')
 
 
-# LOGIN
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -61,7 +59,6 @@ def login_view(request):
     return render(request, 'core/login.html')
 
 
-# LOGOUT
 @login_required
 def logout_view(request):
     logout(request)
