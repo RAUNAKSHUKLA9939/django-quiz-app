@@ -1,21 +1,22 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import Category, Quiz
+
 
 def home(request):
     categories = Category.objects.all()
     return render(request, 'core/home.html', {'categories': categories})
 
+
 def register(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
-        email    = request.POST.get('email')
-        password = request.POST.get('password')
-        confirm  = request.POST.get('confirm_password')
+        username = request.POST['username']
+        email = request.POST['email']
+        password = request.POST['password']
+        confirm = request.POST['confirm_password']
 
         if password != confirm:
             messages.error(request, "Passwords do not match.")
@@ -29,13 +30,14 @@ def register(request):
             messages.error(request, "Email already exists.")
             return redirect('register')
 
-        User.objects.create(
+        # ✅ FIXED LINE
+        User.objects.create_user(
             username=username,
             email=email,
-            password=make_password(password)
+            password=password
         )
 
-        messages.success(request, "Account created successfully. Please login.")
+        messages.success(request, "Account created successfully.")
         return redirect('login')
 
     return render(request, 'core/register.html')
@@ -43,14 +45,13 @@ def register(request):
 
 def login_view(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        username = request.POST['username']
+        password = request.POST['password']
 
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
-            messages.success(request, f"Welcome {username}!")
             return redirect('home')
         else:
             messages.error(request, "Invalid username or password.")
@@ -62,7 +63,6 @@ def login_view(request):
 @login_required
 def logout_view(request):
     logout(request)
-    messages.info(request, "You have been logged out.")
     return redirect('login')
 
 
