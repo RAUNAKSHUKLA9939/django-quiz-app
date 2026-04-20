@@ -4,11 +4,11 @@ from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-
+from .models import Category, Quiz
 
 def home(request):
-    return render(request, 'core/home.html')
-
+    categories = Category.objects.all()
+    return render(request, 'core/home.html', {'categories': categories})
 
 def register(request):
     if request.method == 'POST':
@@ -64,3 +64,8 @@ def logout_view(request):
     logout(request)
     messages.info(request, "You have been logged out.")
     return redirect('login')
+
+
+def category_quizzes(request, category_id):
+    quizzes = Quiz.objects.filter(category_id=category_id)
+    return render(request, 'core/quizzes_by_category.html', {'quizzes': quizzes})
