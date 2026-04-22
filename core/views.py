@@ -161,5 +161,22 @@ def quiz_result(request):
 def my_attempts(request):
     attempts = Attempt.objects.filter(user=request.user).order_by('-completed_at')
     return render(request, 'core/my_attempts.html', {'attempts': attempts})
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Count
+from django.contrib.auth.models import User
 
+@staff_member_required
+def admin_dashboard(request):
+    from .models import Quiz, Attempt
+
+    context = {
+        'total_users': User.objects.count(),
+        'total_quizzes': Quiz.objects.count(),
+        'total_attempts': Attempt.objects.count(),
+        'top_quizzes': Quiz.objects.annotate(
+            attempts=Count('attempt')
+        ).order_by('-attempts')[:5],
+    }
+
+    return render(request, 'core/admin_dashboard.html', context)
  
