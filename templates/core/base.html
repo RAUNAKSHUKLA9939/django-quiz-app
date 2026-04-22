@@ -14,6 +14,9 @@
 
   <div class="ml-auto">
     {% if user.is_authenticated %}
+    <li class="nav-item">
+    <a class="nav-link" href="{% url 'my_attempts' %}">My Attempts</a>
+</li>
         <span class="text-white mr-3">Hello, {{ user.username }}</span>
         <a href="{% url 'logout' %}" class="btn btn-danger btn-sm">Logout</a>
     {% else %}

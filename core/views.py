@@ -119,21 +119,47 @@ def attempt_quiz(request):
         'question_number': question_index + 1,
         'total_questions': len(questions),
     })
-
+from .models import Attempt, Answer, Question, Option
 
 @login_required
 def quiz_result(request):
     score = request.session.get('score', 0)
     quiz_id = request.session.get('quiz_id')
-
-    quiz = get_object_or_404(Quiz, id=quiz_id)
+    quiz = get_object_or_404(Quiz, pk=quiz_id)
     total_questions = quiz.question_set.count()
+    answers = request.session.get('answers', {})
 
-    for key in ['quiz_id', 'question_index', 'score', 'answers']:
+    # Save attempt
+    attempt = Attempt.objects.create(
+        user=request.user,
+        quiz=quiz,
+        score=score,
+        total=total_questions,
+    )
+
+    # Save answers
+    for qid, oid in answers.items():
+        question = Question.objects.get(pk=qid)
+        option = Option.objects.get(pk=oid)
+
+        Answer.objects.create(
+            attempt=attempt,
+            question=question,
+            selected_option=option
+        )
+
+    # Clear session
+    for key in ['score', 'quiz_id', 'question_index', 'answers']:
         request.session.pop(key, None)
 
     return render(request, 'core/quiz_result.html', {
         'score': score,
         'total_questions': total_questions,
-        'quiz': quiz,
+        'quiz': quiz
     })
+@login_required
+def my_attempts(request):
+    attempts = Attempt.objects.filter(user=request.user).order_by('-completed_at')
+    return render(request, 'core/my_attempts.html', {'attempts': attempts})
+
+ 

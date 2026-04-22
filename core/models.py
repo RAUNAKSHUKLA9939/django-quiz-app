@@ -1,6 +1,10 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
+# -------------------------
+# CATEGORY MODEL
+# -------------------------
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
@@ -8,31 +12,32 @@ class Category(models.Model):
         return self.name
 
 
+# -------------------------
+# QUIZ MODEL
+# -------------------------
 class Quiz(models.Model):
     title = models.CharField(max_length=200)
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.CASCADE,
-        related_name='quizzes'
-    )
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
 
 
+# -------------------------
+# QUESTION MODEL
+# -------------------------
 class Question(models.Model):
-    quiz = models.ForeignKey(
-        Quiz,
-        on_delete=models.CASCADE,
-        related_name='questions'
-    )
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     text = models.TextField()
 
     def __str__(self):
         return self.text
 
 
+# -------------------------
+# OPTION MODEL
+# -------------------------
 class Option(models.Model):
     question = models.ForeignKey(
         Question,
@@ -43,4 +48,30 @@ class Option(models.Model):
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.text
+        return f"{self.text} ({'Correct' if self.is_correct else 'Wrong'})"
+
+
+# -------------------------
+# ATTEMPT MODEL (Day 6)
+# -------------------------
+class Attempt(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    score = models.IntegerField()
+    total = models.IntegerField()
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.quiz.title} ({self.score}/{self.total})"
+
+
+# -------------------------
+# ANSWER MODEL (Day 6)
+# -------------------------
+class Answer(models.Model):
+    attempt = models.ForeignKey(Attempt, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    selected_option = models.ForeignKey(Option, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.question.text} -> {self.selected_option.text}"
