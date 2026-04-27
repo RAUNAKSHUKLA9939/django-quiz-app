@@ -1,4 +1,4 @@
- {% extends 'core/base.html' %}
+{% extends 'core/base.html' %}
 {% block content %}
 
 <div class="card p-4 shadow-sm">
@@ -28,25 +28,28 @@
 
 <!-- TIMER SCRIPT -->
 <script>
-    let totalTime = 30;  // change per question time
+    let totalTime = 60;
     let timerElement = document.getElementById("timer");
+    let form = document.getElementById("quiz-form");
 
     function updateTimer() {
         let minutes = Math.floor(totalTime / 60);
         let seconds = totalTime % 60;
 
-        timerElement.innerText = `Time Left: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        timerElement.innerText =
+            `Time Left: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
         if (totalTime <= 0) {
             clearInterval(timerInterval);
             alert("Time's up!");
-            document.getElementById("quiz-form").submit();
+            form.submit();   // ✅ safer
         }
 
         totalTime--;
     }
 
+    updateTimer();  // ✅ show immediately
     let timerInterval = setInterval(updateTimer, 1000);
-</script>
+</script> 
 
 {% endblock %}

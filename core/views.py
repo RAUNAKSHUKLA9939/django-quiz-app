@@ -1,57 +1,57 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
-from .models import Category, Quiz, Option
+from .models import Category, Quiz, Question, Option, Attempt, Answer
 
 
+# HOME
 def home(request):
     categories = Category.objects.all()
     return render(request, 'core/home.html', {'categories': categories})
 
 
-def register(request):
+# SIGNUP
+def signup(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        email = request.POST['email']
-        password = request.POST['password']
-        confirm = request.POST['confirm_password']
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
 
-        if password != confirm:
+        # validations
+        if password1 != password2:
             messages.error(request, "Passwords do not match")
-            return redirect('register')
+            return redirect('signup')
 
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username already exists")
-            return redirect('register')
+            return redirect('signup')
 
-        if User.objects.filter(email=email).exists():
-            messages.error(request, "Email already exists")
-            return redirect('register')
-
-        User.objects.create(
+        # create user
+        user = User.objects.create_user(
             username=username,
             email=email,
-            password=make_password(password)
+            password=password1
         )
 
-        messages.success(request, "Account created successfully")
-        return redirect('login')
+        login(request, user)
+        return redirect('home')
 
-    return render(request, 'core/register.html')
+    return render(request, 'core/register.html')   # ✅ use register.html
 
 
-def login_view(request):
+# LOGIN
+def user_login(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username')
+        password = request.POST.get('password')
 
         user = authenticate(request, username=username, password=password)
 
-        if user:
+        if user is not None:
             login(request, user)
             return redirect('home')
         else:
@@ -61,19 +61,19 @@ def login_view(request):
     return render(request, 'core/login.html')
 
 
-@login_required
-def logout_view(request):
+# LOGOUT
+def user_logout(request):
     logout(request)
-    return redirect('login')
+    return redirect('home')
 
 
+# CATEGORY QUIZZES
 def category_quizzes(request, category_id):
     quizzes = Quiz.objects.filter(category_id=category_id)
     return render(request, 'core/quizzes_by_category.html', {'quizzes': quizzes})
 
 
-# ===================== DAY 5 START =====================
-
+# QUIZ START
 @login_required
 def start_quiz(request, quiz_id):
     request.session['quiz_id'] = quiz_id
@@ -83,19 +83,23 @@ def start_quiz(request, quiz_id):
     return redirect('attempt_quiz')
 
 
+# QUIZ ATTEMPT
 @login_required
 def attempt_quiz(request):
     quiz_id = request.session.get('quiz_id')
     question_index = request.session.get('question_index', 0)
 
-    quiz = get_object_or_404(Quiz, id=quiz_id)
+    if not quiz_id:
+        return redirect('home')
+
+    quiz = get_object_or_404(Quiz, pk=quiz_id)
     questions = list(quiz.question_set.all())
 
     if question_index >= len(questions):
         return redirect('quiz_result')
 
-    question = questions[question_index]
-    options = question.options.all()
+    current_question = questions[question_index]
+    options = current_question.options.all()
 
     if request.method == 'POST':
         selected_option_id = request.POST.get('option')
@@ -104,7 +108,7 @@ def attempt_quiz(request):
             selected_option = Option.objects.get(id=selected_option_id)
 
             answers = request.session.get('answers', {})
-            answers[str(question.id)] = selected_option.id
+            answers[str(current_question.id)] = selected_option.id
             request.session['answers'] = answers
 
             if selected_option.is_correct:
@@ -114,30 +118,34 @@ def attempt_quiz(request):
         return redirect('attempt_quiz')
 
     return render(request, 'core/quiz_attempt.html', {
-        'question': question,
+        'question': current_question,
         'options': options,
         'question_number': question_index + 1,
         'total_questions': len(questions),
     })
-from .models import Attempt, Answer, Question, Option
 
+
+# QUIZ RESULT + SAVE ATTEMPT
 @login_required
 def quiz_result(request):
     score = request.session.get('score', 0)
     quiz_id = request.session.get('quiz_id')
-    quiz = get_object_or_404(Quiz, pk=quiz_id)
-    total_questions = quiz.question_set.count()
     answers = request.session.get('answers', {})
 
-    # Save attempt
+    if not quiz_id:
+        return redirect('home')
+
+    quiz = get_object_or_404(Quiz, pk=quiz_id)
+    total_questions = quiz.question_set.count()
+
+    # SAVE ATTEMPT
     attempt = Attempt.objects.create(
         user=request.user,
         quiz=quiz,
         score=score,
-        total=total_questions,
+        total=total_questions
     )
 
-    # Save answers
     for qid, oid in answers.items():
         question = Question.objects.get(pk=qid)
         option = Option.objects.get(pk=oid)
@@ -148,7 +156,7 @@ def quiz_result(request):
             selected_option=option
         )
 
-    # Clear session
+    # CLEAR SESSION
     for key in ['score', 'quiz_id', 'question_index', 'answers']:
         request.session.pop(key, None)
 
@@ -157,26 +165,10 @@ def quiz_result(request):
         'total_questions': total_questions,
         'quiz': quiz
     })
+
+
+# MY ATTEMPTS
 @login_required
 def my_attempts(request):
     attempts = Attempt.objects.filter(user=request.user).order_by('-completed_at')
     return render(request, 'core/my_attempts.html', {'attempts': attempts})
-from django.contrib.admin.views.decorators import staff_member_required
-from django.db.models import Count
-from django.contrib.auth.models import User
-
-@staff_member_required
-def admin_dashboard(request):
-    from .models import Quiz, Attempt
-
-    context = {
-        'total_users': User.objects.count(),
-        'total_quizzes': Quiz.objects.count(),
-        'total_attempts': Attempt.objects.count(),
-        'top_quizzes': Quiz.objects.annotate(
-            attempts=Count('attempt')
-        ).order_by('-attempts')[:5],
-    }
-
-    return render(request, 'core/admin_dashboard.html', context)
- 
