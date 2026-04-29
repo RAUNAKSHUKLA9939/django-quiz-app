@@ -1,22 +1,29 @@
-body {
+ body {
     padding-top: 70px;
-    background-color: #f8f9fa;
+    background: linear-gradient(to right, #667eea, #764ba2);
+    color: #333;
 }
 
 .card {
-    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     border-radius: 10px;
+}
+
+.navbar {
+    background-color: #343a40 !important;
 }
 
 .navbar-brand {
     font-weight: bold;
-    font-size: 1.3rem;
+    font-size: 1.4rem;
+    color: #fff !important;
 }
 
-.btn {
-    border-radius: 8px;
+.btn-primary {
+    background-color: #5a67d8;
+    border: none;
 }
 
-h2, h4 {
-    font-weight: 600;
+.btn-primary:hover {
+    background-color: #434190;
 }

@@ -1,5 +1,6 @@
 {% extends 'core/base.html' %}
 {% block content %}
+<div class="alert alert-warning text-center" id="timer" style="font-size: 20px;"></div>
 
 <div class="card p-4 shadow-sm">
 
@@ -28,9 +29,8 @@
 
 <!-- TIMER SCRIPT -->
 <script>
-    let totalTime = 60;
+    let totalTime = 60;  // change if needed
     let timerElement = document.getElementById("timer");
-    let form = document.getElementById("quiz-form");
 
     function updateTimer() {
         let minutes = Math.floor(totalTime / 60);
@@ -41,15 +41,13 @@
 
         if (totalTime <= 0) {
             clearInterval(timerInterval);
-            alert("Time's up!");
-            form.submit();   // ✅ safer
+            alert("Time's up! Submitting...");
+            document.getElementById("quiz-form").submit();
         }
 
         totalTime--;
     }
 
-    updateTimer();  // ✅ show immediately
     let timerInterval = setInterval(updateTimer, 1000);
-</script> 
-
+</script>
 {% endblock %}

@@ -1,10 +1,10 @@
-{% load static %}
+ {% load static %}
 <!DOCTYPE html>
 <html>
  <head>
     <title>Quiz App</title>
 
-    <!-- Bootstrap -->
+    <!-- Bootstrap 4 -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
     <!-- Custom CSS -->
@@ -17,32 +17,27 @@
 
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-    <a class="navbar-brand" href="{% url 'home' %}">Quiz App</a>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="{% url 'home' %}">Quiz App</a>
 
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-    </button>
+  <div class="ml-auto d-flex align-items-center">
 
-    <div class="collapse navbar-collapse" id="navbarNav">
-         <ul class="navbar-nav ml-auto">
     {% if user.is_authenticated %}
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'my_attempts' %}">My Attempts</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-        </li>
+        <a class="nav-link text-white" href="{% url 'my_attempts' %}">My Attempts</a>
+
+        <span class="text-white mr-3">Hello, {{ user.username }}</span>
+
+        <a href="{% url 'logout' %}" class="btn btn-danger btn-sm">Logout</a>
+
     {% else %}
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'login' %}">Login</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'signup' %}">Register</a>
-        </li>
+        <a href="{% url 'login' %}" class="btn btn-success btn-sm mr-2">Login</a>
+
+        <!-- ✅ FIXED HERE -->
+        <a href="{% url 'signup' %}" class="btn btn-primary btn-sm">Register</a>
+
     {% endif %}
-</ul>
-    </div>
+
+  </div>
 </nav>
 
 <div class="container mt-4">
